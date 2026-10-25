@@ -1,5 +1,6 @@
 /// <reference types="bun" />
 import { describe, expect, test } from "bun:test";
+import { separateCredits } from "../src/utils/Lyrics/fallback/credits.ts";
 import {
   ERROR_RETRY_MS,
   MISS_RETRY_MS,
@@ -61,6 +62,52 @@ function memoryStore() {
 }
 
 describe("NetEase matching and line timing", () => {
+  test("moves leading and trailing production credits out of timed lyrics without changing lyric timing", () => {
+    const original = {
+      ...lyrics(),
+      Content: parseLrc(
+        "[00:00] 作词 : 张醒婵\n[00:01]作曲：张醒婵\n[00:02]编曲: 张醒婵\n[01:05.177]第一句  保留空格\n[01:16.219]第二句\n[01:50]混音: Someone",
+        120000
+      ),
+    };
+    const result = separateCredits(original);
+    expect(result.Content.map((row) => [row.Text, row.StartTime, row.EndTime])).toEqual([
+      ["第一句  保留空格", 65.177, 76.219],
+      ["第二句", 76.219, 110],
+    ]);
+    expect(result.StartTime).toBe(65.177);
+    expect(result.ProductionCredits).toEqual([
+      { role: "Lyricist", name: "张醒婵" },
+      { role: "Composer", name: "张醒婵" },
+      { role: "Arranger", name: "张醒婵" },
+      { role: "Mixing", name: "Someone" },
+    ]);
+    expect(original.Content.length).toBe(6);
+    expect(separateCredits(result)).toBe(result);
+  });
+  test("recognizes explicit combined credit roles but preserves unknown labels and lyric fragments", () => {
+    const result = separateCredits({
+      ...lyrics(),
+      Content: parseLrc(
+        "[00:00]作詞/作曲：A / B\n[00:01]作詞/作曲：A / B\n[00:10]我为你作词作曲\n[00:20]作词：这是正文中的一句\n[00:30]最后一句",
+        120000
+      ),
+    });
+    expect(result.ProductionCredits).toEqual([
+      { role: "Lyricist", name: "A / B" },
+      { role: "Composer", name: "A / B" },
+    ]);
+    expect(result.Content.map((row) => row.Text)).toEqual([
+      "我为你作词作曲",
+      "作词：这是正文中的一句",
+      "最后一句",
+    ]);
+    const unknown = { ...lyrics(), Content: parseLrc("[00:01]他说：你好\n[00:02]歌词", 120000) };
+    expect(separateCredits(unknown)).toBe(unknown);
+    expect(
+      separateCredits({ ...lyrics(), Content: parseLrc("[00:00]作词：A", 120000) }).Content
+    ).toEqual([]);
+  });
   test("only confirmed lyric absence can start supplementation", () => {
     expect(isMissingLyrics(["lyrics-not-found", 404])).toBe(true);
     for (const result of [

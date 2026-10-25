@@ -88,6 +88,14 @@ may route them through its CORS proxy. This adapter adds no Spotify token or
 NetEase cookie. Requests time out after eight seconds; uncertain song matches
 are left unresolved. Only line-synced LRC is supported in this first version.
 
+Explicit leading/trailing production credits (lyricist, composer, arranger and
+other recognized roles) are separated from timed lyrics and rendered using the
+existing credits block beneath the song. Roles and names are retained, with
+English/Chinese labels. Existing saved supplements are migrated on read, without
+another network request. Original lyric timestamps and internal spaces remain
+unchanged; copying and sharing include lyric lines only. Unknown labels and
+credit-like phrases in the middle of the lyrics are left untouched.
+
 Integration checks on a compatible Spotify installation:
 
 1. Play a confirmed missing track. Verify a search and lyric request, then a

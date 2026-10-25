@@ -1,9 +1,12 @@
 import { ApplyIsByCommunity } from "./ApplyIsByCommunity.tsx";
 import { ApplyLyricsProvider } from "./ApplyProvider.ts";
 import { CreditsRow } from "./CreditsRow.ts";
+import { getSettingsLocale } from "../../../../components/ReactComponents/SettingsPanel/locale.ts";
+import { translateSettings } from "../../../settingsLocale.ts";
 
 interface LyricsData {
   SongWriters?: string[];
+  ProductionCredits?: { role: string; name: string }[];
   Type?: string;
   Content?: any;
   classes?: string;
@@ -20,12 +23,18 @@ export function MarkLastLineSide(container: HTMLElement, opposite: boolean, rtl:
 }
 
 export function ApplyLyricsCredits(data: LyricsData, LyricsContainer: HTMLElement): void {
-  if (!data?.SongWriters || !LyricsContainer) return;
-
-  const CreditsElement = document.createElement("div");
-  CreditsElement.classList.add("Credits");
-  CreditsRow(CreditsElement, "Written by", data.SongWriters.join(", "));
-  LyricsContainer.appendChild(CreditsElement);
+  if (!data || !LyricsContainer) return;
+  const append = (label: string, value: string) => {
+    const row = document.createElement("div");
+    row.classList.add("Credits");
+    CreditsRow(row, translateSettings(label, getSettingsLocale()), value);
+    LyricsContainer.appendChild(row);
+  };
+  if (data.SongWriters?.length) append("Written by", data.SongWriters.join(", "));
+  for (const credit of data.ProductionCredits ?? []) {
+    if (typeof credit?.role === "string" && typeof credit.name === "string")
+      append(credit.role, credit.name);
+  }
 }
 
 /**
@@ -43,7 +52,8 @@ export function ApplySongCredits(data: any, LyricsContainer: HTMLElement): void 
   ApplyIsByCommunity(data, CreditsElement);
 
   // Community lyrics name their source in the community line, so the refined look drops "Provided by".
-  if (CreditsElement.querySelector(":scope > .SongInfo")) CreditsElement.classList.add("FromCommunity");
+  if (CreditsElement.querySelector(":scope > .SongInfo"))
+    CreditsElement.classList.add("FromCommunity");
 
   if (CreditsElement.childElementCount > 0) LyricsContainer.appendChild(CreditsElement);
 }

@@ -20,6 +20,7 @@ export interface SupplementalLyrics {
   uri: string;
   StartTime: number;
   EndTime: number;
+  ProductionCredits?: { role: string; name: string }[];
   Content: {
     Type: "Vocal";
     Text: string;

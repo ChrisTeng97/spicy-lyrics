@@ -1,4 +1,5 @@
 import { matchSong, parseLrc, type SupplementalLyrics, type TrackIdentity } from "./model.ts";
+import { separateCredits } from "./credits.ts";
 
 /** Public metadata/lyrics via Spicetify's CORS-capable request helper (which may use its proxy).
  * No Spotify token, NetEase cookie or user identifier is attached by this adapter.
@@ -46,7 +47,7 @@ export async function lookupNetease(
   const Content = parseLrc(response.lrc?.lyric, track.durationMs);
   if (!Content.length) return null;
   const now = Date.now();
-  return {
+  const lyrics = separateCredits({
     Type: "Line",
     source: "ncm",
     uri: track.uri,
@@ -59,5 +60,6 @@ export async function lookupNetease(
       fetchedAt: now,
       primaryCheckedAt: now,
     },
-  };
+  });
+  return lyrics.Content.length ? lyrics : null;
 }
