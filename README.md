@@ -1,3 +1,43 @@
+# Spicy Lyrics — 本 fork 的改动
+
+这是基于 [Spikerko/spicy-lyrics](https://github.com/Spikerko/spicy-lyrics) 的个人定制 fork，主要补充 **中文设置、歌词显示偏好、歌词分享，以及网易云缺词补充**。仍通过 Spicetify 运行于 Spotify 桌面客户端，目前没有 Android 版本。
+
+## 中文界面与设置搜索
+
+- 新增独立的语言选项：跟随 Spotify、English、简体中文。
+- 为设置界面、歌词分享界面及歌词页工具栏提示补充中文；工具栏的无障碍标签也随语言切换。
+- 设置搜索支持中英文关键词，包括本 fork 新增的选项。
+
+## 歌词显示偏好
+
+新增三个可独立切换的选项，可在设置中搜索对应名称：
+
+| 选项 | 效果 |
+| --- | --- |
+| Line-only Lyrics / 仅逐行切换 | 使用整行切换，关闭逐字高亮动效。 |
+| Clear Lyrics / 歌词始终清晰 | 清晰显示未唱到的歌词，关闭模糊效果。 |
+| Disable Lyrics Glow / 关闭歌词泛光 | 关闭歌词文字的泛光效果。 |
+
+## 歌词图片分享与文字复制
+
+- 从歌词页打开分享窗口，按整行勾选歌词；支持不连续选择，保留歌曲中的原始顺序。
+- 使用 Apple Music 风格排版与 Spicy Lyrics 的动态专辑背景，可定格背景并复制或保存 PNG 图片。
+- 支持 `1:1`、`3:4`、`9:16` 比例；歌词过多时自动延长画布，生成长图。
+- 封面、歌名、歌手可分别隐藏；分享窗口保留打开时的歌曲内容，切歌后不会被替换。
+- 支持复制所选歌词的纯文本，并保留歌词中的空格。
+
+## 网易云缺词补充与署名格式
+
+- 仅在主歌词来源确认返回 `lyrics-not-found (404)` 时搜索网易云；网络错误、限流或服务异常不会触发补词。
+- 根据歌名、歌手和时长等信息筛选匹配结果，成功后按 Spotify 曲目标识保存到本地，后续播放可直接复用。
+- 补词数据独立存储，不覆盖手动导入的歌词；定期重新检查主来源，有可用歌词时优先使用主来源。
+- 对未找到歌词或请求失败的情况设置重试间隔，避免反复搜索；可在缺词提示中手动重新搜索，也可在设置中关闭网易云补词。
+- 将网易云歌词开头或结尾可识别的作词、作曲、编曲等署名移入原有歌词页底部署名区域，保留角色与姓名，避免它们作为正文参与滚动和分享。
+
+> 下方保留上游项目说明。其中的 Marketplace 安装方式、版本徽章及上游发行版链接指向原版 Spicy Lyrics，不代表安装了本 fork 的定制功能。
+
+---
+
 # Spicy Lyrics
 [![Github Version](https://img.shields.io/github/v/release/spikerko/spicy-lyrics)](https://github.com/spikerko/spicy-lyrics/) [![Github Stars badge](https://img.shields.io/github/stars/spikerko/spicy-lyrics?style=social)](https://github.com/spikerko/spicy-lyrics/) [![Discord Badge](https://dcbadge.limes.pink/api/server/uqgXU5wh8j?style=flat)](https://discord.com/invite/uqgXU5wh8j)
 
