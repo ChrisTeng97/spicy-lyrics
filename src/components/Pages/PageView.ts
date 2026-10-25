@@ -70,6 +70,8 @@ import { openSettingsPanel } from "../../utils/settings.ts";
 import { openLyricsShare } from "../LyricsShare/index.tsx";
 import { getShareTrack } from "../LyricsShare/snapshot.ts";
 import { shareText } from "../LyricsShare/locale.ts";
+import { getSettingsLocale } from "../ReactComponents/SettingsPanel/locale.ts";
+import { translateSettings } from "../../utils/settingsLocale.ts";
 import Logger from "../../utils/Logger.ts";
 import { setStockPlaybarPage } from "../../utils/themeMatcher.ts";
 import {
@@ -608,6 +610,22 @@ function AppendViewControls(ReAppend: boolean = false) {
   function SetupTippy(elem: HTMLElement) {
     // If in PIP mode, do not create any Tippy tooltips, but still wire up click handlers
     const isPip = IsPIP;
+    const labels: Record<string, string> = {
+      Close: "Close Page",
+      CompactModeToggle: IsCompactMode() ? "Disable Compact Mode" : "Enable Compact Mode",
+      RomanizationToggle: isRomanized ? "Disable Romanization" : "Enable Romanization",
+      NowBarToggle: "NowBar",
+      FullscreenToggle: Fullscreen.CinemaViewOpen ? "Fullscreen" : "Cinema View",
+      CinemaView: "Cinema View",
+      NowBarSideToggle: "Swap NowBar Side",
+      SettingsToggle: "Spicy Lyrics Settings",
+      LyricsManager: "Lyrics Manager",
+    };
+    const locale = getSettingsLocale();
+    for (const id of Object.keys(labels)) {
+      labels[id] = translateSettings(labels[id], locale);
+      elem.querySelector(`#${id}`)?.setAttribute("aria-label", labels[id]);
+    }
 
     const closeButton = elem.querySelector("#Close");
     if (closeButton) {
@@ -615,7 +633,7 @@ function AppendViewControls(ReAppend: boolean = false) {
         if (!isPip) {
           Tooltips.Close = createTooltip(closeButton, {
             ...Spicetify.TippyProps,
-            content: `Close Page`,
+            content: labels.Close,
           });
         }
         closeButton.addEventListener("click", async () => {
@@ -648,9 +666,7 @@ function AppendViewControls(ReAppend: boolean = false) {
         if (!isPip) {
           Tooltips.CompactModeToggle = createTooltip(compactModeToggle, {
             ...Spicetify.TippyProps,
-            content: `${
-              IsCompactMode() ? "Disable Compact Mode" : "Enable Compact Mode"
-            }`,
+            content: labels.CompactModeToggle,
           });
         }
         compactModeToggle.addEventListener("click", () => {
@@ -683,7 +699,7 @@ function AppendViewControls(ReAppend: boolean = false) {
         if (!isPip) {
           Tooltips.RomanizationToggle = createTooltip(romanizationToggle, {
             ...Spicetify.TippyProps,
-            content: isRomanized ? `Disable Romanization` : `Enable Romanization`,
+            content: labels.RomanizationToggle,
           });
         }
         romanizationToggle.addEventListener("click", async () => {
@@ -719,7 +735,7 @@ function AppendViewControls(ReAppend: boolean = false) {
           if (!isPip) {
             Tooltips.NowBarToggle = createTooltip(nowBarButton, {
               ...Spicetify.TippyProps,
-              content: `NowBar`,
+              content: labels.NowBarToggle,
             });
           }
           nowBarButton.addEventListener("click", () => ToggleNowBar());
@@ -736,9 +752,7 @@ function AppendViewControls(ReAppend: boolean = false) {
         if (!isPip) {
           Tooltips.FullscreenToggle = createTooltip(fullscreenBtn, {
             ...Spicetify.TippyProps,
-            content: `${
-              Fullscreen.CinemaViewOpen ? "Fullscreen" : "Cinema View"
-            }`,
+            content: labels.FullscreenToggle,
           });
         }
         fullscreenBtn.addEventListener("click", async () => {
@@ -765,7 +779,7 @@ function AppendViewControls(ReAppend: boolean = false) {
         if (!isPip) {
           Tooltips.CinemaView = createTooltip(cinemaViewBtn, {
             ...Spicetify.TippyProps,
-            content: `Cinema View`,
+            content: labels.CinemaView,
           });
         }
         cinemaViewBtn.addEventListener("click", async () => {
@@ -786,7 +800,7 @@ function AppendViewControls(ReAppend: boolean = false) {
         if (!isPip) {
           Tooltips.NowBarSideToggle = createTooltip(nowBarSideToggleBtn, {
             ...Spicetify.TippyProps,
-            content: `Swap NowBar Side`,
+            content: labels.NowBarSideToggle,
           });
         }
         nowBarSideToggleBtn.addEventListener("click", () => NowBar_SwapSides());
@@ -809,7 +823,7 @@ function AppendViewControls(ReAppend: boolean = false) {
       try {
         Tooltips.Settings = createTooltip(settingsButton, {
           ...Spicetify.TippyProps,
-          content: `Spicy Lyrics Settings`,
+          content: labels.SettingsToggle,
         });
         settingsButton.addEventListener("click", () => {
           openSettingsPanel();
@@ -825,7 +839,7 @@ function AppendViewControls(ReAppend: boolean = false) {
         if (!isPip) {
           Tooltips.LyricsManager = createTooltip(lyricsManagerButton, {
             ...Spicetify.TippyProps,
-            content: `Lyrics Manager`,
+            content: labels.LyricsManager,
           });
         }
         lyricsManagerButton.addEventListener("click", () => {
