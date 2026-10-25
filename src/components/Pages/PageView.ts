@@ -33,6 +33,7 @@ import {
   $lyricsContainerExists,
   $minimalLyricsMode,
   $showVolumeSlider,
+  $settingsLanguage,
   $simpleLyricsMode,
   $skipSpicyFont,
   $ttmlMakerMode,
@@ -66,12 +67,16 @@ import { NPVCardOwnsPage, DeRenderNPVCard } from "../Utils/NPVLyrics.ts";
 import { CleanUpIsByCommunity } from "../../utils/Lyrics/Applyer/Credits/ApplyIsByCommunity.tsx";
 import { OpenLyricsDBPanel } from "../../utils/openLyricsDBPanel.tsx";
 import { openSettingsPanel } from "../../utils/settings.ts";
+import { openLyricsShare } from "../LyricsShare/index.tsx";
+import { getShareTrack } from "../LyricsShare/snapshot.ts";
+import { shareText } from "../LyricsShare/locale.ts";
 import Logger from "../../utils/Logger.ts";
 import { setStockPlaybarPage } from "../../utils/themeMatcher.ts";
 import {
   ApplyExperimentClasses,
   onExperimentChange,
   onExperimentDefinitionChange,
+  isExperimentEnabled,
 } from "../../utils/experiments.ts";
 import { triggerRemeasureLV } from "../../utils/Lyrics/LyricsVirtualizer.ts";
 
@@ -93,6 +98,7 @@ export const Tooltips: {
   NowBarSideToggle: TippyInstance | null;
   LyricsManager: TippyInstance | null;
   Settings: TippyInstance | null;
+  ShareLyrics: TippyInstance | null;
 } = {
   Close: null,
   CompactModeToggle: null,
@@ -103,6 +109,7 @@ export const Tooltips: {
   NowBarSideToggle: null,
   LyricsManager: null,
   Settings: null,
+  ShareLyrics: null,
 };
 
 const PageView = {
@@ -564,6 +571,7 @@ function AppendViewControls(ReAppend: boolean = false) {
             ? `<button id="LyricsManager" class="ViewControl">${Icons.LyricsManager}</button>`
             : ""
         }
+        ${IsPIP || !isExperimentEnabled("lyricSharing") ? "" : `<button id="ShareLyrics" class="ViewControl" aria-label="${shareText("Share lyrics")}" ${getShareTrack() ? "" : "disabled"}>${Icons.ShareLyrics}</button>`}
         ${IsPIP ? "" : `<button id="SettingsToggle" class="ViewControl">${Icons.Settings}</button>`}
         <button id="Close" class="ViewControl">${Icons.Close}</button>
     `;
@@ -787,6 +795,15 @@ function AppendViewControls(ReAppend: boolean = false) {
       }
     }
 
+    const shareButton = elem.querySelector("#ShareLyrics");
+    if (shareButton) {
+      Tooltips.ShareLyrics = createTooltip(shareButton, {
+        ...Spicetify.TippyProps,
+        content: shareText("Share lyrics"),
+      });
+      shareButton.addEventListener("click", openLyricsShare);
+    }
+
     const settingsButton = elem.querySelector("#SettingsToggle");
     if (settingsButton && !isPip) {
       try {
@@ -881,6 +898,7 @@ $showVolumeSlider.listen((v) => {
 onExperimentChange((experiment) => {
   if (!PageContainer) return;
   ApplyExperimentClasses(PageContainer);
+  if (experiment.id === "lyricSharing") AppendViewControls(true);
   // Its letter split and word springs are fixed when the lyrics are built, so rebuild them.
   if (experiment.id === "refreshedSimpleLyrics" && $simpleLyricsMode.get()) {
     const uri = SpotifyPlayer.GetUri();
@@ -904,5 +922,9 @@ $ttmlMakerMode.listen((v) => {
   if (!PageContainer) return;
   AppendViewControls(true);
 })
+
+$settingsLanguage.listen(() => {
+  if (PageContainer) AppendViewControls(true);
+});
 
 export default PageView;

@@ -10,7 +10,9 @@ import Global from "../Global/Global.ts";
 import { COVER_PLACEHOLDER_URL, SpotifyPlayer } from "../Global/SpotifyPlayer.ts";
 import ArtistVisuals from "./ArtistVisuals/Main.ts";
 import { PageContainer } from "../Pages/PageView.ts";
-import Kawarp, { type KawarpOptions } from "@kawarp/core";
+import Kawarp from "@kawarp/core";
+import { KawarpOptionsStatic } from "./options.ts";
+export { KawarpOptionsStatic } from "./options.ts";
 import { BackgroundAnimationController, type AudioAnalysisData } from "./BackgroundAnimationController.ts";
 import { getDynamicAudioAnalysis } from "../../utils/audioAnalysis.ts";
 import Logger from "../../utils/Logger.ts";
@@ -22,16 +24,6 @@ const dynamicBgLogger = new Logger("Dynamic Background");
 export const PAGE_BACKGROUND_KEY = "lpagebg";
 
 const KawarpTransitionDuration = 1000;
-export const KawarpOptionsStatic: KawarpOptions = {
-  warpIntensity: 1,
-  blurPasses: 8,
-  animationSpeed: 0.1,
-  saturation: 1.5,
-  dithering: 0.008,
-  transitionDuration: 500,
-  tintIntensity: 0,
-  scale: 1,
-}
 
 const PAUSED_SPEED = 0.1;
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");

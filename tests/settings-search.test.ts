@@ -8,6 +8,12 @@ import {
 import { resolveSettingsLocale, translateSettings } from "../src/utils/settingsLocale.ts";
 
 describe("settings language", () => {
+  test("lyric sharing is searchable in both languages", () => {
+    const setting = { id: "experiment:lyricSharing", label: "Lyric Sharing", description: "Select lyric lines to copy as text or export as an image with an animated cover background." };
+    for (const query of ["歌词分享", "复制歌词", "复制文字", "导出", "share", "copy text", "png", "poster"]) {
+      expect(matchesSetting(query, setting)).toBe(true);
+    }
+  });
   test("explicit language overrides Spotify and automatic selection falls back safely", () => {
     expect(resolveSettingsLocale("en", "zh-CN")).toBe("en");
     expect(resolveSettingsLocale("zh-CN", "en-US")).toBe("zh-CN");

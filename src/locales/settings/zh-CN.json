@@ -1,4 +1,6 @@
 {
+  "Lyric Sharing": "歌词分享",
+  "Select lyric lines to copy as text or export as an image with an animated cover background.": "勾选歌词行，复制为纯文字，或搭配动态封面背景导出图片。",
   "Settings": "设置",
   "Disable Lyrics Glow": "关闭歌词泛光",
   "Remove text glow from highlighted lyrics and word effects. Keep active-line brightness, inactive-line blur and background effects. Disable to restore the original glow.": "关闭高亮歌词和逐字效果的文字泛光，保留当前行的亮度区分、未唱歌词模糊及背景效果。关闭此选项后恢复原有泛光。",

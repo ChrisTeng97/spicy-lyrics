@@ -73,6 +73,13 @@ export type Experiment = {
 
 export const EXPERIMENTS = [
   {
+    id: "lyricSharing",
+    label: "Lyric Sharing",
+    description: "Select lyric lines to copy as text or export as an image with an animated cover background.",
+    default: true,
+    rebuildsNowBar: true,
+  },
+  {
     id: "newProgressBarStyling",
     label: "New SliderBar Styling",
     description:
