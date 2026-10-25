@@ -1,4 +1,9 @@
 {
+  "NetEase Missing Lyrics": "网易云缺词补充",
+  "Only search NetEase Cloud Music when Spicy Lyrics reports no lyrics. Save matched lyrics locally for reuse.": "仅在 Spicy Lyrics 提示无歌词时搜索网易云音乐，将匹配的歌词保存到本地供下次使用。",
+  "Searching NetEase Cloud Music for missing lyrics…": "正在网易云音乐搜索缺失的歌词…",
+  "NetEase Cloud Music (saved locally)": "网易云音乐（已保存到本地）",
+  "Search again": "重新搜索",
   "Enable Romanization": "开启罗马字转写",
   "Disable Romanization": "关闭罗马字转写",
   "Close Page": "关闭歌词页面",

@@ -913,6 +913,11 @@ onExperimentChange((experiment) => {
   if (!PageContainer) return;
   ApplyExperimentClasses(PageContainer);
   if (experiment.id === "lyricSharing") AppendViewControls(true);
+  if (experiment.id === "neteaseFallback") {
+    const uri = SpotifyPlayer.GetUri();
+    $currentLyricsData.set("");
+    if (uri) fetchLyrics(uri).then(ApplyLyrics);
+  }
   // Its letter split and word springs are fixed when the lyrics are built, so rebuild them.
   if (experiment.id === "refreshedSimpleLyrics" && $simpleLyricsMode.get()) {
     const uri = SpotifyPlayer.GetUri();

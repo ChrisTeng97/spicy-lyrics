@@ -8,6 +8,12 @@ import {
 import { resolveSettingsLocale, translateSettings } from "../src/utils/settingsLocale.ts";
 
 describe("settings language", () => {
+  test("missing-lyrics supplementation is searchable in both languages", () => {
+    const setting = { id: "experiment:neteaseFallback", label: "NetEase Missing Lyrics" };
+    for (const query of ["网易云", "补词", "歌词来源", "netease", "missing lyrics", "fallback", "local cache"]) {
+      expect(matchesSetting(query, setting)).toBe(true);
+    }
+  });
   test("lyric sharing is searchable in both languages", () => {
     const setting = { id: "experiment:lyricSharing", label: "Lyric Sharing", description: "Select lyric lines to copy as text or export as an image with an animated cover background." };
     for (const query of ["歌词分享", "复制歌词", "复制文字", "导出", "share", "copy text", "png", "poster"]) {

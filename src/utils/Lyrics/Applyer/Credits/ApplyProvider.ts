@@ -1,4 +1,6 @@
 import { CreditsRow } from "./CreditsRow.ts";
+import { getSettingsLocale } from "../../../../components/ReactComponents/SettingsPanel/locale.ts";
+import { translateSettings } from "../../../settingsLocale.ts";
 
 const ProviderMap = {
     "spt": "Spotify",
@@ -6,6 +8,7 @@ const ProviderMap = {
     "spl": "Spicy Lyrics",
     "ldb": "Local DB",
     "uns": "Unison",
+    "ncm": "NetEase Cloud Music (saved locally)",
 } as const;
 
 // `url` carries a utm_source so the source can tell visits that came from here.
@@ -23,7 +26,7 @@ export function ApplyLyricsProvider(data: any, LyricsContainer: HTMLElement): vo
   if (typeof data.source === "string") {
     const source = data.source.toLowerCase();
     const match = Object.entries(ProviderMap).find(([key]) => source.includes(key));
-    if (match) providerLabel = match[1];
+    if (match) providerLabel = translateSettings(match[1], getSettingsLocale());
   }
 
   CreditsRow(ProviderElement, "Provided by", providerLabel);

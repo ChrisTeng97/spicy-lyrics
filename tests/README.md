@@ -63,3 +63,42 @@ Lyric Sharing defaults to on. Open the full lyrics page and use Share lyrics:
 The editor shares the live page's Kawarp background settings but owns its renderer
 and cover snapshot. Exports freeze it, contain no watermark and use clear static
 text independently of playback highlighting and glow preferences.
+
+## NetEase fallback for missing lyrics
+
+Run `bun test tests/netease-fallback.test.ts`. Covers strict title/artist/version/
+duration matching, ambiguous candidates, LRC whitespace and timing, the exact
+404 trigger, persistent positive and negative results, and retry intervals.
+
+Enable **NetEase Missing Lyrics** (default on; searchable as `网易云`, `补词`,
+`netease`, `fallback`). It only searches after `lyrics-not-found (404)`, including
+saved-state and cached misses. No search is made on 429, 503, service/network
+failure or malformed query envelopes. Manual TTML imports retain priority.
+
+Automatic results are stored separately in IndexedDB `spicylyrics-supplemental`,
+store `netease`, keyed by Spotify URI. They do not overwrite the manual TTML
+library or primary lyrics cache. Positive records retain the original source
+song ID and URL. Misses retry after 24 hours; failures after 15 minutes. **Search
+again** on the no-lyrics notice bypasses the cooldown and checks the primary
+service again. Saved absence is rechecked after seven days; newly available
+primary lyrics win. Disabling the experiment ignores saved supplements.
+
+Requests use `Spicetify.CosmosAsync` with NetEase metadata/lyrics URLs; Spicetify
+may route them through its CORS proxy. This adapter adds no Spotify token or
+NetEase cookie. Requests time out after eight seconds; uncertain song matches
+are left unresolved. Only line-synced LRC is supported in this first version.
+
+Integration checks on a compatible Spotify installation:
+
+1. Play a confirmed missing track. Verify a search and lyric request, then a
+   visible NetEase source credit and a saved record. Reload: no new NetEase
+   request should be made, and timed lyrics should still display.
+2. Exercise a saved `NO_LYRICS` state and a cached miss, not just an API 404.
+   Confirm the supplement replaces the old no-lyrics state immediately.
+3. Return 429/500/503 or a transport failure from the primary service: expect
+   the corresponding notice and zero NetEase requests. Existing primary lyrics
+   must also produce zero NetEase requests.
+4. Change tracks during a delayed search; the old lyrics must not paint over
+   the new song. Toggle the experiment off/on and check bilingual settings.
+5. Verify repeated playback, line seeking, copying and sharing. Clear application
+   storage only in a disposable profile: browser-local storage is not a backup.

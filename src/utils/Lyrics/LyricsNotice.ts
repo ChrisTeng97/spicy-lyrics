@@ -8,6 +8,8 @@ import { IsOpen as IsBreakerOpen, RetryAfterMs } from "../API/CircuitBreaker.ts"
 import { getExperiments, isExperimentEnabled } from "../experiments.ts";
 import { $showNoLyricsNotice } from "../stores.ts";
 import { GetLastLyricsFailure } from "./fetchLyrics.ts";
+import { getSettingsLocale } from "../../components/ReactComponents/SettingsPanel/locale.ts";
+import { translateSettings } from "../settingsLocale.ts";
 
 const DISCORD_URL = "https://discord.com/invite/uqgXU5wh8j";
 
@@ -293,8 +295,10 @@ export function BuildLyricsNotice(
   const actions = document.createElement("div");
   actions.className = "notice-actions";
 
-  if (copy.retry) {
-    const retry = makeButton(ICONS.retry, "Try again", true);
+  const retryMissing = descriptor === "lyrics-not-found" && isExperimentEnabled("neteaseFallback");
+  if (copy.retry || retryMissing) {
+    const retry = makeButton(ICONS.retry, retryMissing
+      ? translateSettings("Search again", getSettingsLocale()) : "Try again", true);
     retry.addEventListener("click", onRetry, { signal });
     actions.appendChild(retry);
   }

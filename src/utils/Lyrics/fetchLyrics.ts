@@ -14,8 +14,14 @@ import { SetShownNotice, SyncNoLyricsLayout } from "./LyricsNotice.ts";
 import { GetExpireStore } from "../../modules/Store.ts";
 import { SLObjPack } from "../objpack.ts";
 import { HideLyricsSkeleton, IsLyricsSkeletonEnabled, ShowLyricsSkeleton } from "./LyricsSkeleton.ts";
-import { onExperimentChange } from "../experiments.ts";
+import { isExperimentEnabled, onExperimentChange } from "../experiments.ts";
 import { getRemoteConfig } from "../remoteConfig.ts";
+import { isMissingLyrics, PRIMARY_RECHECK_MS, type TrackIdentity } from "./fallback/model.ts";
+import { primaryCheckDue, resolveFallback } from "./fallback/cache.ts";
+import { fallbackStore } from "./fallback/store.ts";
+import { lookupNetease } from "./fallback/netease.ts";
+import { translateSettings } from "../settingsLocale.ts";
+import { getSettingsLocale } from "../../components/ReactComponents/SettingsPanel/locale.ts";
 
 const lyricsLogger = new Logger("Lyrics Pipeline");
 const lyricsCacheLogger = new Logger("Lyrics Cache");
@@ -165,7 +171,7 @@ function backOffIfSwitchingFast(): Promise<boolean> {
   });
 }
 
-export default async function fetchLyrics(uri: string): Promise<FetchLyricsResult> {
+export default async function fetchLyrics(uri: string, options: { retryMissing?: boolean } = {}): Promise<FetchLyricsResult> {
   if (inFlightUri === uri) {
     lyricsLogger.debug("Fetch already in flight for this track, skipping", uri);
     return null;
@@ -179,8 +185,46 @@ export default async function fetchLyrics(uri: string): Promise<FetchLyricsResul
   latestRequestedUri = uri;
   $currentlyFetching.set(true);
 
+  // Capture identity before any await; never search a new song using an old song's URI.
+  const track: TrackIdentity = {
+    uri,
+    title: SpotifyPlayer.GetName() ?? "",
+    artists: (SpotifyPlayer.GetArtists() ?? []).map(artist => artist.name),
+    album: SpotifyPlayer.GetAlbumName() ?? "",
+    durationMs: SpotifyPlayer.GetDuration(),
+  };
+
   try {
-    const result = await runFetchLyrics(uri);
+    let result = await runFetchLyrics(uri, options.retryMissing);
+    if (isMissingLyrics(result) && isExperimentEnabled("neteaseFallback") &&
+        uri.startsWith("spotify:track:") && !isStaleFetch(uri)) {
+      try {
+        $currentlyFetching.set(true);
+        ShowQueueLoader(translateSettings("Searching NetEase Cloud Music for missing lyrics…", getSettingsLocale()));
+        const lyrics = await resolveFallback(track, fallbackStore, async identity => {
+          if (!navigator.onLine) throw new Error("Offline; NetEase search skipped");
+          return lookupNetease(identity, () => !isStaleFetch(uri) && isExperimentEnabled("neteaseFallback"));
+        }, { primaryWasChecked: lastFailure?.source === "API", force: options.retryMissing });
+        if (lyrics && !isStaleFetch(uri) && isExperimentEnabled("neteaseFallback")) {
+          await ProcessLyrics(lyrics);
+          if (isStaleFetch(uri) || !isExperimentEnabled("neteaseFallback")) return null;
+          // Successful supplements live only in their own store, never in the primary cache.
+          try {
+            if ((await LyricsStore.GetItem(uri.split(":")[2]))?.Value === "NO_LYRICS")
+              await LyricsStore.RemoveItem(uri.split(":")[2]);
+          } catch (error) { lyricsCacheLogger.warn("Could not clear absent-lyrics cache", error); }
+          $currentLyricsData.set(JSON.stringify(lyrics));
+          lastFailure = null;
+          presentLyrics(lyrics);
+          result = [lyrics, 200];
+        }
+      } catch (error) {
+        // Preserve the original 404. Failure of an optional provider must not break playback.
+        lyricsLogger.warn("NetEase supplemental lyrics unavailable", error);
+      } finally {
+        hideLoaderFor(uri);
+      }
+    }
     // Stamp the result with the uri it was requested for, so a late arrival can
     // be told apart from a result for the track that's playing now.
     return result ? [result[0], result[1], uri] : null;
@@ -194,7 +238,7 @@ export default async function fetchLyrics(uri: string): Promise<FetchLyricsResul
   }
 }
 
-async function runFetchLyrics(uri: string): Promise<[object | string, number] | null> {
+async function runFetchLyrics(uri: string, retryMissing = false): Promise<[object | string, number] | null> {
   lyricsLogger.debug("Fetch requested", uri);
   if (lastFailure?.uri === uri) lastFailure = null;
   //if (!PageContainer) return;
@@ -245,8 +289,16 @@ async function runFetchLyrics(uri: string): Promise<[object | string, number] | 
   }
 
 
-  // Check if there's already data in localStorage
+  const supplementalEnabled = isExperimentEnabled("neteaseFallback");
+  const supplement = supplementalEnabled
+    ? await fallbackStore.get(uri).catch(() => undefined)
+    : undefined;
+  const refreshPrimary = retryMissing || (navigator.onLine && primaryCheckDue(supplement));
+
+  // Check if there's already data in the current session.
   const savedLyricsData = $currentLyricsData.get();
+  let savedMissing = false;
+  let savedSupplement: any = null;
 
   if (savedLyricsData && !isDev) {
     try {
@@ -254,17 +306,21 @@ async function runFetchLyrics(uri: string): Promise<[object | string, number] | 
         // Sentinel format is `NO_LYRICS:<uri>`. The uri itself contains colons,
         // so strip the prefix rather than splitting on ":".
         const savedUri = savedLyricsData.slice("NO_LYRICS:".length);
-        if (savedUri === uri) {
-          $currentlyFetching.set(false);
-          noteFailure(uri, "saved state");
-          return ["lyrics-not-found", 404];
+        if (savedUri === uri && !refreshPrimary) {
+          savedMissing = true;
         }
       } else {
         const lyricsData = JSON.parse(savedLyricsData);
         // Return the stored lyrics if the URI matches the current track URI
-        if (lyricsData?.uri === uri) {
-          presentLyrics(lyricsData);
-          return [lyricsData, 200];
+        const usable = !lyricsData?.NeteaseFallback || (supplementalEnabled && !retryMissing &&
+          (!navigator.onLine || Date.now() - lyricsData.NeteaseFallback.primaryCheckedAt < PRIMARY_RECHECK_MS));
+        if (lyricsData?.uri === uri && usable) {
+          if (lyricsData.NeteaseFallback) savedSupplement = lyricsData;
+          else {
+            // Preserve the original session priority, including temporary TTML uploads.
+            presentLyrics(lyricsData);
+            return [lyricsData, 200];
+          }
         }
       }
     } catch (error) {
@@ -274,6 +330,7 @@ async function runFetchLyrics(uri: string): Promise<[object | string, number] | 
     }
   }
 
+  // Manual imports take priority over automatic supplements and old absence markers.
   const localLyric = await LocalLyricsManager.get(uri);
   if (localLyric) {
     const lyricsData = { ...localLyric, uri };
@@ -281,6 +338,15 @@ async function runFetchLyrics(uri: string): Promise<[object | string, number] | 
     $currentLyricsData.set(JSON.stringify(lyricsData));
     presentLyrics(lyricsData);
     return [lyricsData, 200];
+  }
+  if (savedSupplement) {
+    presentLyrics(savedSupplement);
+    return [savedSupplement, 200];
+  }
+  if (savedMissing) {
+    $currentlyFetching.set(false);
+    noteFailure(uri, "saved state");
+    return ["lyrics-not-found", 404];
   }
 
   // Local files have no real track id (uri.split(":")[2] is the URL-encoded
@@ -295,7 +361,7 @@ async function runFetchLyrics(uri: string): Promise<[object | string, number] | 
   if (LyricsStore) {
     try {
       const lyricsFromCacheRes = await LyricsStore.GetItem(trackId);
-      if (lyricsFromCacheRes) {
+      if (lyricsFromCacheRes && !(refreshPrimary && lyricsFromCacheRes.Value === "NO_LYRICS")) {
         if (lyricsFromCacheRes?.Value === "NO_LYRICS") {
           $currentlyFetching.set(false);
           noteFailure(uri, "lyrics cache");
@@ -322,6 +388,12 @@ async function runFetchLyrics(uri: string): Promise<[object | string, number] | 
 
 
   if (!navigator.onLine) {
+    if (supplement?.lyrics) {
+      if (isStaleFetch(uri)) return [supplement.lyrics, 200];
+      $currentLyricsData.set(JSON.stringify(supplement.lyrics));
+      presentLyrics(supplement.lyrics);
+      return [supplement.lyrics, 200];
+    }
     $currentlyFetching.set(false);
     return ["offline", 400];
   }
@@ -414,7 +486,7 @@ async function runFetchLyrics(uri: string): Promise<[object | string, number] | 
       hideLoaderFor(uri);
       $currentlyFetching.set(false);
       noteFailure(uri, "API", "response had no lyrics query");
-      return ["lyrics-not-found", 404];
+      return ["status-not-200", 502];
     }
 
     status = lyricsQuery.httpStatus;

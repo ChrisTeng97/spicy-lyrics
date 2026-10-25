@@ -73,6 +73,12 @@ export type Experiment = {
 
 export const EXPERIMENTS = [
   {
+    id: "neteaseFallback",
+    label: "NetEase Missing Lyrics",
+    description: "Only search NetEase Cloud Music when Spicy Lyrics reports no lyrics. Save matched lyrics locally for reuse.",
+    default: true,
+  },
+  {
     id: "lyricSharing",
     label: "Lyric Sharing",
     description: "Select lyric lines to copy as text or export as an image with an animated cover background.",

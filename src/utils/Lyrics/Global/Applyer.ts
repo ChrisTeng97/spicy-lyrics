@@ -133,7 +133,7 @@ export default async function ApplyLyrics(lyricsContent: FetchLyricsResult): Pro
         // Retry the track that's playing now; a notice left over from a
         // skipped track is replaced by that track's own apply anyway.
         const uri = SpotifyPlayer.GetUri();
-        if (uri) fetchLyrics(uri).then(ApplyLyrics);
+        if (uri) fetchLyrics(uri, { retryMissing: descriptor === "lyrics-not-found" }).then(ApplyLyrics);
       })
     );
 

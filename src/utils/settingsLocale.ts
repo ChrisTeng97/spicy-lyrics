@@ -27,6 +27,7 @@ export function translateSettings(
 
 /** Extra terms describe intent without changing the visible labels. */
 export const settingsSearchKeywords: Record<string, string> = {
+  "experiment:neteaseFallback": "网易云 补词 缺词 歌词来源 本地 netease missing lyrics fallback source local cache",
   "experiment:lyricSharing": "歌词 分享 分享图片 复制歌词 复制文字 海报 导出 图片 lyric lyrics share sharing copy text image picture poster export png",
   "experiment:lineOnlyLyrics":
     "逐行 整行 按行 逐字 动效 动画 逐字动效 逐字动画 line by line line-by-line whole line line sync word by word karaoke animation effects",
