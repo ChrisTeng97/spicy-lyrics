@@ -1,6 +1,6 @@
 # Spicy Lyrics — 本 fork 的改动
 
-这是基于 [Spikerko/spicy-lyrics](https://github.com/Spikerko/spicy-lyrics) 的个人定制 fork，主要补充 **中文设置、歌词显示偏好、歌词分享，以及网易云缺词补充**。仍通过 Spicetify 运行于 Spotify 桌面客户端，目前没有 Android 版本。
+这是基于 [Spikerko/spicy-lyrics](https://github.com/Spikerko/spicy-lyrics) 的 fork，主要补充 **中文设置、歌词显示偏好、歌词分享，以及网易云缺词补充**。仍通过 Spicetify 运行于 Spotify 桌面客户端。
 
 ## 中文界面与设置搜索
 
