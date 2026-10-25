@@ -1,3 +1,5 @@
+import { ForkRepository } from "../project/config.ts";
+
 // CSS Imports
 import "./css/tokens.css";
 import "./css/primitives.css";
@@ -1133,10 +1135,8 @@ async function main() {
 
       Global.Event.listen("session:navigation", (data: Location) => {
         if (data.pathname === "/SpicyLyrics/Update") {
-          $fromVersion.set($spicyLyricsVersion.get());
-          window._spicy_lyrics_metadata = {};
           Session.GoBack();
-          window.location.reload();
+          window.open(`${ForkRepository}#installation`, "_blank");
         }
       });
 

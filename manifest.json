@@ -1,12 +1,12 @@
 [
   {
-    "name": "Spicy Lyrics",
-    "description": "Spicy Lyrics is a better lyrics experience (compared to Spotify Lyrics) for Spotify. It brings word-by-word lyrics (karaoke style), beautiful animations, and more. Come and give it a try!",
+    "name": "Spicy Lyrics (ChrisTeng97 fork)",
+    "description": "Spicy Lyrics fork with Chinese settings, optional line-only lyrics, clear lyrics, glow controls, lyric sharing and NetEase fallback.",
     "preview": "./previews/V3latest_smallcard_preview.webp",
     "main": "./builds/spicy-lyrics.mjs",
     "readme": "README.md",
     "branch": "main",
-    "authors": [{ "name": "Spikerko", "url": "https://github.com/Spikerko" }],
+    "authors": [{ "name": "Spikerko", "url": "https://github.com/Spikerko" }, { "name": "ChrisTeng97", "url": "https://github.com/ChrisTeng97" }],
     "tags": [
       "lyrics",
       "spicy-lyrics",

@@ -2,6 +2,8 @@
 
 这是基于 [Spikerko/spicy-lyrics](https://github.com/Spikerko/spicy-lyrics) 的 fork，主要补充 **中文设置、歌词显示偏好、歌词分享，以及网易云缺词补充**。仍通过 Spicetify 运行于 Spotify 桌面客户端。
 
+**安装本 fork：[下载安装包与安装说明](#installation)**。Marketplace 中的原版 Spicy Lyrics 不包含本页列出的定制功能。
+
 ## 中文界面与设置搜索
 
 - 新增独立的语言选项：跟随 Spotify、English、简体中文。
@@ -34,7 +36,7 @@
 - 对未找到歌词或请求失败的情况设置重试间隔，避免反复搜索；可在缺词提示中手动重新搜索，也可在设置中关闭网易云补词。
 - 将网易云歌词开头或结尾可识别的作词、作曲、编曲等署名移入原有歌词页底部署名区域，保留角色与姓名，避免它们作为正文参与滚动和分享。
 
-> 下方保留上游项目说明。其中的 Marketplace 安装方式、版本徽章及上游发行版链接指向原版 Spicy Lyrics，不代表安装了本 fork 的定制功能。
+> 下方保留上游项目介绍、社区和指南链接；安装章节已替换为本 fork 的安装方式。上游版本徽章只表示原版版本。
 
 ---
 
@@ -51,64 +53,47 @@ Spicy Lyrics replaces Spotify's lyrics view with animated lyrics, dynamic backgr
 
 ## Installation
 
-Spicy Lyrics runs only in the Spotify **desktop** client, through Spicetify. It does not need Spotify Premium.
+### 安装本 fork / Install this fork
 
-### 1. Install Spicetify
+本 fork 运行于安装了 [Spicetify](https://spicetify.app/docs/getting-started) 的 Spotify 桌面客户端。先确认 Spicetify 支持你的 Spotify 版本。
 
-**Windows** (PowerShell):
-
-```powershell
-iwr -useb https://raw.githubusercontent.com/spicetify/cli/main/install.ps1 | iex
-```
-
-**macOS / Linux** (Terminal):
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/spicetify/cli/main/install.sh | sh
-```
-
-> [!WARNING]
-> Spicetify cannot modify a Snap-based Spotify installation on Linux. See the [official Spicetify guide](https://spicetify.app/docs/getting-started) for other setups.
-
-### 2. Check that the Marketplace is installed
-
-Look for the **Marketplace** button in Spotify's top-left corner. If it's missing, install it:
-
-**Windows:**
-
-```powershell
-iwr -useb https://raw.githubusercontent.com/spicetify/marketplace/main/resources/install.ps1 | iex
-```
-
-**macOS / Linux:**
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/spicetify/marketplace/main/resources/install.sh | sh
-```
-
-### 3. Install Spicy Lyrics
-
-1. Open the **Marketplace**.
-2. Go to **Extensions** and search for **Spicy Lyrics**.
-3. Select **Install**.
-
-Play a song and open the lyrics view to confirm it loaded. Marketplace installs update automatically; restart Spotify if a new version hasn't appeared.
-
-<details>
-<summary><strong>Manual installation (not recommended)</strong></summary>
-
-1. Download [`spicy-lyrics.mjs`](./builds/spicy-lyrics.mjs).
-2. Put it in your Spicetify Extensions folder. [Find the folder for your OS](https://spicetify.app/docs/customization/extensions#manual-installation).
-3. Run:
+1. 如果已在 Marketplace 安装原版 **Spicy Lyrics**，先在 Marketplace 中卸载原版，避免同时运行两份扩展。
+2. **[下载本 fork 的 spicy-lyrics.mjs](https://raw.githubusercontent.com/ChrisTeng97/spicy-lyrics/main/builds/spicy-lyrics.mjs)**，保持文件名为 `spicy-lyrics.mjs`。这是包含上述定制功能的完整构建，不会转去下载上游程序。
+3. 将文件放入 Spicetify 的 `Extensions` 文件夹：Windows 通常是 `%APPDATA%\spicetify\Extensions`，macOS / Linux 通常是 `~/.config/spicetify/Extensions`。自定义安装位置请参阅 [Spicetify 手动安装说明](https://spicetify.app/docs/customization/extensions#manual-installation)。
+4. 运行以下命令启用本 fork：
 
 ```bash
 spicetify config extensions spicy-lyrics.mjs
 spicetify apply
 ```
 
-Manual installs don't update automatically.
+如果此前使用的是本仓库早期的本地构建 `spicy-lyrics-source.js` 或 `spicy-lyrics.js`，先执行对应的命令停用旧入口，再启用上述新入口：
 
-</details>
+```bash
+spicetify config extensions spicy-lyrics-source.js-
+spicetify config extensions spicy-lyrics.js-
+```
+
+打开歌词页 → 设置 → 关于，应能看到 **ChrisTeng97 fork** 和 **Fork / 安装与更新** 入口。不要同时启用原版与 fork。无需清空设置或本地歌词库。
+
+**更新：** 重新下载上面的文件，覆盖 `Extensions` 中的同名文件，再运行 `spicetify apply`。这是手动更新安装包；重启 Spotify 本身不会下载更新，也不会自动切回上游。歌词在线查询仍使用原有服务。
+
+**English:** Install Spicetify first, uninstall the upstream Marketplace extension if present, download the fork bundle above into your Spicetify `Extensions` folder, then run the enable/apply commands. Disable an older manually installed copy before enabling this one. Updates are manual: replace the same file and apply again. The About panel identifies this build as **ChrisTeng97 fork**.
+
+### 从源码构建 / Build from source
+
+需要 Node.js 和 Bun。在本仓库目录运行：
+
+```bash
+bun install --frozen-lockfile
+bun run build:fork
+```
+
+`build:fork` 只生成文件，不安装或重启 Spotify。它构建当前源码、验证完整性，并生成 `builds/spicy-lyrics.mjs`；发布源码改动时应一并提交更新后的安装包。`builds/main/entrypoint.mjs` 也指向同仓库的这个构建。
+
+### 上游安装方式 / Upstream installation
+
+如需原版，请前往 [Spikerko/spicy-lyrics](https://github.com/Spikerko/spicy-lyrics#installation) 或在 Marketplace 搜索 **Spicy Lyrics**。该入口安装的是原版，不包含本 fork 的定制功能。
 
 ## Troubleshooting
 

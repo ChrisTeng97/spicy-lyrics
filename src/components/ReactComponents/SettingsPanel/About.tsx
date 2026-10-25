@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Session from "../../Global/Session.ts";
 import App from "../../../utils/app.ts";
 import { $spicyLyricsVersion } from "../../../utils/stores.ts";
+import { ForkRepository } from "../../../../project/config.ts";
 
 interface Link {
   label: string;
@@ -13,6 +14,7 @@ interface Link {
 }
 
 const LINKS: Link[] = [
+  { label: "Fork / installation", url: `${ForkRepository}#installation` },
   { label: "Website", url: "https://spicylyrics.org" },
   { label: "Discord", url: "https://discord.com/invite/uqgXU5wh8j", brand: "88, 101, 242" },
   { label: "Ko-fi", url: "https://ko-fi.com/spikerko", brand: "255, 94, 138" },
@@ -91,7 +93,7 @@ function ExternalArrow() {
 export default function About({ status }: { status: UpdateStatus }) {
   const { t } = useSettingsTranslation();
   const version = useStore($spicyLyricsVersion);
-  const build = App.isDev() ? "dev" : "public";
+  const build = App.isDev() ? "dev" : "ChrisTeng97 fork";
 
   return (
     <div className="sl-sp-about">
@@ -122,6 +124,7 @@ export default function About({ status }: { status: UpdateStatus }) {
         <span className="sl-sp-about-build">
           {t("Build")} <span className="sl-sp-about-build-value">{t(build)}</span>
         </span>
+        <p>{t("This fork uses manual updates. Download updates from the fork installation page.")}</p>
       </div>
 
       <div className="sl-sp-about-links">

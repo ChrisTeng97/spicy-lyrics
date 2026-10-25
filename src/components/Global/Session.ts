@@ -1,6 +1,4 @@
 import { $spicyLyricsVersion } from "../../utils/stores.ts";
-import { getRemoteConfig } from "../../utils/remoteConfig.ts";
-import { EdgeLookup } from "../../utils/API/EdgeService.ts";
 import Global from "./Global.ts";
 
 interface Location {
@@ -83,20 +81,10 @@ const Session = {
     GetCurrentVersion: (): VersionParsedData => {
       return Session.SpicyLyrics.ParseVersion($spicyLyricsVersion.get());
     },
-    GetLatestVersion: async (branch = "public"): Promise<VersionParsedData> => {
-      // On the edge so the frequent update checks stay off /query. Answers
-      // { product, branches: [{ tag, version }] }; we read one branch's version.
-      const res = await EdgeLookup("version", {
-        timeoutMs: getRemoteConfig().updates.latestVersionTimeoutMs,
-      });
-      if (!res.ok) return undefined;
-      const body = (await res.json().catch(() => undefined)) as
-        | { branches?: { tag?: unknown; version?: unknown }[] }
-        | undefined;
-      const version = Array.isArray(body?.branches)
-        ? body.branches.find((b) => b?.tag === branch)?.version
-        : undefined;
-      return typeof version === "string" ? Session.SpicyLyrics.ParseVersion(version) : undefined;
+    GetLatestVersion: async (): Promise<VersionParsedData> => {
+      // This fork ships a standalone, manually updated bundle. Upstream's
+      // release number does not describe this build or its custom features.
+      return undefined;
     },
     IsOutdated: async (): Promise<boolean> => {
       const latestVersion = await Session.SpicyLyrics.GetLatestVersion();
