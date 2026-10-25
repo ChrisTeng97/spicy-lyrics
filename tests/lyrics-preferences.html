@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" />
+  <title>Lyrics preferences regression fixture</title>
+  <link rel="stylesheet" href="../src/css/Lyrics/Mixed.css" />
+  <style>
+    body {
+      background: #222;
+      color: white;
+      font-family: system-ui;
+    }
+    #SpicyLyricsPage {
+      width: 800px;
+      container-type: inline-size;
+      --DefaultLyricsSize: 30px;
+    }
+  </style>
+  <pre id="result">Running…</pre>
+  <p>Hover the first lyric line to check the hover glow toggle.</p>
+  <div id="SpicyLyricsPage" class="SpicyRenderer">
+    <div class="LyricsContainer">
+      <div class="LyricsContent">
+        <div class="SpicyLyricsScrollContainer" data-lyrics-type="Syllable">
+          <div
+            class="line Active"
+            style="--text-shadow-opacity: 60%; --text-shadow-blur-radius: 14px"
+          >
+            <span
+              class="word"
+              style="
+                transform: translateY(8px);
+                scale: 1.3;
+                --gradient-position: 40%;
+                --text-shadow-opacity: 60%;
+                --text-shadow-blur-radius: 14px;
+              "
+              >Active</span
+            ><span class="letterGroup"
+              ><span class="letter" style="opacity: 0.3; transform: translateY(7px); scale: 1.5"
+                >held</span
+              ></span
+            >
+          </div>
+          <div class="line NotSung" style="--BlurAmount: 4px">
+            <span class="word">Upcoming</span>
+          </div>
+          <div class="line Sung" style="--BlurAmount: 3px"><span class="word">Finished</span></div>
+          <div class="line Active musical-line">
+            <span class="dot" style="transform: translateY(3px)">•</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const root = document.getElementById("SpicyLyricsPage");
+    const result = document.getElementById("result");
+    const snapshot = () =>
+      [...root.querySelectorAll(".line,.word,.letter,.letterGroup,.dot")].map((el) => {
+        const s = getComputedStyle(el);
+        return {
+          transform: s.transform,
+          scale: s.scale,
+          opacity: s.opacity,
+          gradient: s.backgroundImage,
+          shadow: s.textShadow,
+          blur: s.getPropertyValue("--BlurAmount"),
+        };
+      });
+    function assert(condition, message) {
+      if (!condition) throw Error(message);
+    }
+    const modes = ["", "SimpleLyricsMode", "SimpleLyricsMode Exp_RefreshedSimpleLyrics"];
+    let cases = 0;
+    try {
+      for (const mode of modes)
+        for (const direction of ["ltr", "rtl"]) {
+          root.className = "SpicyRenderer " + mode;
+          root.dir = direction;
+          const before = snapshot();
+          const dot = root.querySelector(".dot");
+          const dotBefore = getComputedStyle(dot).transform;
+          const inactive = root.querySelector(".NotSung");
+          const inactiveShadow = getComputedStyle(inactive).textShadow;
+          root.classList.add("Exp_NoLyricsGlow");
+          for (const el of root.querySelectorAll(
+            ".line.Active:not(.musical-line), .line.Active .word, .line.Active .letter, .line.Active .letterGroup"
+          )) {
+            assert(getComputedStyle(el).textShadow === "none", "active glow remains: " + mode);
+          }
+          assert(
+            getComputedStyle(inactive).textShadow === inactiveShadow,
+            "glow toggle changed distance blur"
+          );
+          assert(getComputedStyle(dot).transform === dotBefore, "glow toggle changed interlude");
+          root.classList.remove("Exp_NoLyricsGlow");
+          assert(
+            JSON.stringify(snapshot()) === JSON.stringify(before),
+            "glow off did not restore baseline"
+          );
+          root.classList.add("Exp_LineOnlyLyrics");
+          for (const el of root.querySelectorAll(".word,.letter,.letterGroup")) {
+            const s = getComputedStyle(el);
+            assert(s.transform === "none" && s.scale === "1", "word movement remains: " + mode);
+            assert(
+              s.getPropertyValue("--gradient-alpha").trim() ===
+                s.getPropertyValue("--gradient-alpha-end").trim(),
+              "partial word fill remains: " + mode
+            );
+          }
+          assert(getComputedStyle(dot).transform === dotBefore, "interlude changed");
+          assert(
+            getComputedStyle(root.querySelector(".NotSung"))
+              .getPropertyValue("--BlurAmount")
+              .trim() === "4px",
+            "line-only changed blur"
+          );
+          root.classList.add("Exp_ClearLyrics");
+          for (const el of root.querySelectorAll(".line,.word,.letter")) {
+            assert(
+              getComputedStyle(el).getPropertyValue("--BlurAmount").trim() === "0px",
+              "blur remains"
+            );
+          }
+          root.classList.remove("Exp_LineOnlyLyrics");
+          assert(
+            getComputedStyle(root.querySelector(".word")).transform === before[1].transform,
+            "clear lyrics changed movement"
+          );
+          root.classList.remove("Exp_ClearLyrics");
+          assert(
+            JSON.stringify(snapshot()) === JSON.stringify(before),
+            "off did not restore baseline: " + mode
+          );
+          cases++;
+        }
+      result.textContent =
+        "PASS: " +
+        cases +
+        " renderer/direction combinations; independent toggles and full restoration.";
+      result.dataset.status = "passed";
+    } catch (error) {
+      result.textContent = "FAIL: " + error.message;
+      result.dataset.status = "failed";
+      throw error;
+    }
+    root.querySelector(".line").addEventListener(
+      "mouseenter",
+      async (event) => {
+        const line = event.currentTarget;
+        const settle = () => new Promise((resolve) => setTimeout(resolve, 350));
+        try {
+          await settle();
+          const before = getComputedStyle(line, "::before");
+          assert(before.backdropFilter === "blur(2px)", "hover baseline must blur");
+          assert(before.opacity === "1", "hover highlight must be visible");
+          root.classList.add("Exp_NoLyricsGlow");
+          await settle();
+          const disabled = getComputedStyle(line, "::before");
+          assert(disabled.backdropFilter === "none", "hover halo remains with glow disabled");
+          assert(disabled.opacity === "1", "glow toggle removed hover highlight");
+          root.classList.remove("Exp_NoLyricsGlow");
+          await settle();
+          assert(
+            getComputedStyle(line, "::before").backdropFilter === "blur(2px)",
+            "hover blur was not restored"
+          );
+          result.dataset.hoverStatus = "passed";
+          result.textContent +=
+            "\nPASS: hover halo removal, highlight preservation and restoration.";
+        } catch (error) {
+          result.dataset.hoverStatus = "failed";
+          result.textContent += "\nFAIL: " + error.message;
+          throw error;
+        }
+      },
+      { once: true }
+    );
+  </script>
+</html>

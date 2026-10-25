@@ -1,4 +1,5 @@
 import type React from "react";
+import { settingsSearchKeywords, translateSettings } from "../../../utils/settingsLocale.ts";
 
 /**
  * One row in the settings panel. The label and description written here are
@@ -38,6 +39,7 @@ export type SectionId =
   | "playback"
   | "interface"
   | "appearance"
+  | "language"
   | "experiments"
   | "advanced"
   | "about";
@@ -68,19 +70,29 @@ export interface SectionDef {
 export function matchesSetting(query: string, setting: SettingDef): boolean {
   const terms = searchTerms(query);
   if (terms.length === 0) return true;
-  const haystack = [setting.label, setting.description, setting.keywords]
+  const haystack = [
+    setting.label,
+    setting.description,
+    setting.keywords,
+    translateSettings(setting.label, "zh-CN"),
+    translateSettings(setting.description ?? "", "zh-CN"),
+    settingsSearchKeywords[setting.id],
+  ]
     .filter(Boolean)
     .join(" ")
+    .normalize("NFKC")
     .toLowerCase();
   return terms.every((term) => haystack.includes(term));
 }
 
 /** Whether every term is in the label itself — those hits are listed first. */
 export function matchesLabel(query: string, setting: SettingDef): boolean {
-  const label = setting.label.toLowerCase();
+  const label = `${setting.label} ${translateSettings(setting.label, "zh-CN")}`
+    .normalize("NFKC")
+    .toLowerCase();
   return searchTerms(query).every((term) => label.includes(term));
 }
 
 export function searchTerms(query: string): string[] {
-  return query.toLowerCase().split(/\s+/).filter(Boolean);
+  return query.normalize("NFKC").toLowerCase().split(/\s+/).filter(Boolean);
 }

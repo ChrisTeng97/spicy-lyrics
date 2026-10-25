@@ -2,6 +2,54 @@
   --SpicyLyrics-LineSpacing: 1cqw 0;
 }
 
+/* Keep the timing, scrolling, voices and romanization of the original lyrics.
+   Equal gradient stops light an active line together, including the refreshed
+   simple renderer; inactive lines retain their normal dimming and blur. */
+#SpicyLyricsPage.SpicyRenderer.Exp_LineOnlyLyrics .LyricsContent .line:not(.musical-line),
+#SpicyLyricsPage.SpicyRenderer.Exp_LineOnlyLyrics .LyricsContent .line:not(.musical-line) :is(.word, .letter, .letterGroup) {
+  --gradient-alpha-end: var(--gradient-alpha) !important;
+  --text-shadow-opacity: 0 !important;
+  --text-shadow-blur-radius: 0px !important;
+}
+
+/* The animator writes transforms inline, so these overrides are gated by the
+   opt-in class. Removing it hands control back to the original animator. */
+#SpicyLyricsPage.SpicyRenderer.Exp_LineOnlyLyrics .LyricsContent .line:not(.musical-line) :is(.word, .letter, .letterGroup) {
+  transform: none !important;
+  translate: none !important;
+  scale: 1 !important;
+  opacity: 1 !important;
+  animation: none !important;
+  transition: none !important;
+  will-change: auto !important;
+}
+
+/* Blur is drawn with text shadows rather than a filter. Keep the active-line
+   glow and the background blur independent of this preference. */
+#SpicyLyricsPage.SpicyRenderer.Exp_ClearLyrics .LyricsContent .line,
+#SpicyLyricsPage.SpicyRenderer.Exp_ClearLyrics .LyricsContent .line :is(.word, .letter, .letterGroup) {
+  --BlurAmount: 0px !important;
+}
+
+/* Suppress animated glow without touching the separate distance-blur shadow. */
+#SpicyLyricsPage.SpicyRenderer.Exp_NoLyricsGlow .LyricsContent .line:not(.musical-line),
+#SpicyLyricsPage.SpicyRenderer.Exp_NoLyricsGlow .LyricsContent .line:not(.musical-line) :is(.word, .letter, .letterGroup) {
+  --text-shadow-opacity: 0 !important;
+  --text-shadow-blur-radius: 0px !important;
+}
+
+/* Active lines only need their text fill; do not suppress inactive-line blur. */
+#SpicyLyricsPage.SpicyRenderer.Exp_NoLyricsGlow .LyricsContent .line.Active:not(.musical-line),
+#SpicyLyricsPage.SpicyRenderer.Exp_NoLyricsGlow .LyricsContent .line.Active:not(.musical-line) :is(.word, .letter, .letterGroup) {
+  text-shadow: none !important;
+}
+
+/* The hover backdrop also blurs the text beneath it, creating a halo even
+   without text-shadow. Keep the highlight fill, but omit its blur in this mode. */
+#SpicyLyricsPage.SpicyRenderer.Exp_NoLyricsGlow .LyricsContent .line:not(.musical-line)::before {
+  backdrop-filter: none !important;
+}
+
 /* #SpicyLyricsPage.SpicyRenderer .LyricsContainer .LyricsContent .line .word,
 #SpicyLyricsPage.SpicyRenderer .LyricsContainer .LyricsContent .line .letter,
 #SpicyLyricsPage.SpicyRenderer .LyricsContainer .LyricsContent .line .letterGroup,

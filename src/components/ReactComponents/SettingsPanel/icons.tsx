@@ -19,6 +19,14 @@ function Icon({ children }: { children: React.ReactNode }) {
   );
 }
 
+export const LanguageIcon = (
+  <Icon>
+    <circle cx="8" cy="8" r="6" />
+    <ellipse cx="8" cy="8" rx="2.5" ry="6" />
+    <path d="M2 8h12" />
+  </Icon>
+);
+
 export const LyricsIcon = (
   <Icon>
     <path d="M2.5 4h11M2.5 8h7.5M2.5 12h9" />

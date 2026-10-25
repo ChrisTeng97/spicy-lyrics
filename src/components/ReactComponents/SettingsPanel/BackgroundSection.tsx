@@ -1,3 +1,4 @@
+import { useSettingsTranslation } from "./locale.ts";
 import { useStore } from "@nanostores/react";
 import {
   $backgroundBlur,
@@ -31,12 +32,13 @@ const groups: GroupDef[] = [
           "Dynamic (Kawarp) swirls the cover art in time with the music. Artist Image uses the artist's header photo, or the cover when there isn't one. None (Transparent) leaves the page see-through, so whatever is behind it shows.",
         keywords: "static animated kawarp artist header cover art color colors image transparent none theme",
         useNote: () => {
+          const { t } = useSettingsTranslation();
           const style = useStore($backgroundStyle);
           const canvasStage = useStore($experiment("canvasImmersive"));
           return (
             style !== "dynamic" &&
             canvasStage &&
-            `${getExperiment("canvasImmersive").label} only plays over Dynamic (Kawarp), so it won't show with ${BACKGROUND_STYLE_LABELS[style] ?? "this background"}.`
+            t("{experiment} only plays over Dynamic (Kawarp), so it won't show with {background}.", { experiment: t(getExperiment("canvasImmersive").label), background: t(BACKGROUND_STYLE_LABELS[style] ?? "this background") })
           );
         },
         Control: ({ label }) => (

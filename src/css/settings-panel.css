@@ -1,4 +1,10 @@
 /* ── Settings Panel — reads chrome tokens from the modal scope ────── */
+/* Use the system's CJK font for translated settings, including form controls. */
+.sl-sp[lang="zh-CN"],
+.sl-sp[lang="zh-CN"] * {
+  font-family: system-ui, sans-serif !important;
+}
+
 sl-generic-modal.SpicyLyricsModal .sl-modal-overlay {
   /* Search field. Shared with the Lyrics Manager's search bar, so anything
      specific to the settings sidebar lives under .sl-sp-sidebar below. */

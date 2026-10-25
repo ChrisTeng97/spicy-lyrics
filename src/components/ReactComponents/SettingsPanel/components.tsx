@@ -1,3 +1,4 @@
+import { useSettingsTranslation } from "./locale.ts";
 import React, { forwardRef, useContext, useRef } from "react";
 import { searchTerms } from "./model.ts";
 
@@ -33,6 +34,7 @@ export function Row({
   /** Inline tag after the label, e.g. a "Forced on" marker. */
   badge?: React.ReactNode;
 }) {
+  const { t } = useSettingsTranslation();
   return (
     <div
       className={`sl-sp-row${disabled ? " sl-sp-row--disabled" : ""}${stacked ? " sl-sp-row--stacked" : ""}`}
@@ -42,9 +44,9 @@ export function Row({
           {label}
           {badge}
         </span>
-        {description && <span className="sl-sp-description">{description}</span>}
-        {disabled && disabledReason && <span className="sl-sp-reason">{disabledReason}</span>}
-        {note && <span className="sl-sp-reason">{note}</span>}
+        {description && <span className="sl-sp-description">{t(description)}</span>}
+        {disabled && disabledReason && <span className="sl-sp-reason">{t(disabledReason)}</span>}
+        {note && <span className="sl-sp-reason">{t(note)}</span>}
       </div>
       <div className="sl-sp-control">{children}</div>
     </div>
@@ -98,6 +100,7 @@ export function Toggle({
   disabled?: boolean;
   label?: string;
 }) {
+  const { t } = useSettingsTranslation();
   const frozen = locked || busy;
   const trackRef = useRef<HTMLSpanElement>(null);
 
@@ -127,7 +130,7 @@ export function Toggle({
       <input
         type="checkbox"
         role="switch"
-        aria-label={label}
+        aria-label={label ? t(label) : undefined}
         checked={checked}
         disabled={frozen || disabled}
         onChange={(e) => onChange(e.currentTarget.checked)}
@@ -152,17 +155,18 @@ export function Select({
   disabled?: boolean;
   label?: string;
 }) {
+  const { t } = useSettingsTranslation();
   return (
     <select
       className="sl-sp-select"
-      aria-label={label}
+      aria-label={label ? t(label) : undefined}
       value={value}
       onChange={(e) => onChange(e.currentTarget.value)}
       disabled={disabled}
     >
       {options.map((opt, i) => (
         <option key={opt} value={opt}>
-          {labels?.[i] ?? opt}
+          {t(labels?.[i] ?? opt)}
         </option>
       ))}
     </select>
@@ -197,6 +201,7 @@ export function Slider({
   disabled?: boolean;
   label?: string;
 }) {
+  const { t } = useSettingsTranslation();
   // Keep in sync with the thumb width in settings-panel.css.
   const THUMB = 16;
   const range = max - min || 1;
@@ -251,7 +256,7 @@ export function Slider({
         <input
           type="range"
           className="sl-sp-slider-input"
-          aria-label={label}
+          aria-label={label ? t(label) : undefined}
           aria-valuetext={valueLabel}
           min={min}
           max={max}
@@ -270,7 +275,7 @@ export function Slider({
             className="sl-sp-slider-reset"
             onClick={() => onChange(defaultValue!)}
           >
-            Reset
+            {t("Reset")}
           </button>
         )}
       </div>
@@ -287,6 +292,7 @@ export const SearchBar = forwardRef<
     placeholder?: string;
   }
 >(function SearchBar({ value, onChange, onKeyDown, placeholder = "Search settings" }, ref) {
+  const { t } = useSettingsTranslation();
   return (
     <div className="sl-sp-search-wrap">
       <svg
@@ -313,8 +319,8 @@ export const SearchBar = forwardRef<
         ref={ref}
         className="sl-sp-search"
         type="search"
-        aria-label="Search all settings"
-        placeholder={placeholder}
+        aria-label={t("Search all settings")}
+        placeholder={t(placeholder)}
         value={value}
         onChange={(e) => onChange(e.currentTarget.value)}
         onKeyDown={onKeyDown}
@@ -325,7 +331,7 @@ export const SearchBar = forwardRef<
           type="button"
           className="sl-sp-search-clear"
           onClick={() => onChange("")}
-          aria-label="Clear search"
+          aria-label={t("Clear search")}
         >
           <svg
             width="10"

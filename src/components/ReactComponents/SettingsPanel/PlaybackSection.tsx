@@ -1,3 +1,4 @@
+import { useSettingsTranslation } from "./locale.ts";
 import { useStore } from "@nanostores/react";
 import {
   $playbackOffset,
@@ -61,12 +62,13 @@ const groups: GroupDef[] = [
         description: "Glide from line to line instead of jumping.",
         // The refreshed Simple Lyrics look brings its own scroll, whatever this is set to.
         useDisabled: () => {
+          const { t } = useSettingsTranslation();
           const simple = useStore($simpleLyricsMode);
           const refreshed = useStore($experiment("refreshedSimpleLyrics"));
           return (
             simple &&
             refreshed &&
-            `${getExperiment("refreshedSimpleLyrics").label} scrolls the lyrics its own way while Simple Lyrics Mode is on.`
+            t("{experiment} scrolls the lyrics its own way while Simple Lyrics Mode is on.", { experiment: t(getExperiment("refreshedSimpleLyrics").label) })
           );
         },
         Control: ({ disabled, label }) => (

@@ -1,3 +1,4 @@
+import { useSettingsTranslation } from "./locale.ts";
 import { useStore } from "@nanostores/react";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
@@ -80,6 +81,7 @@ const FLASH_TIMING: KeyframeAnimationOptions = { duration: 280, easing: "ease-ou
 
 /** "Checking for changes", beside the Experiments title. */
 export function SyncStatus() {
+  const { t } = useSettingsTranslation();
   const syncing = useExperimentsSyncing();
   // The spinner is always mounted; it only runs while the pill shows, not for as long as the tab is open.
   const spinning = useTrailing(syncing, SPIN_TRAIL_MS);
@@ -92,7 +94,7 @@ export function SyncStatus() {
       aria-hidden={!syncing}
     >
       <span className="sl-sp-sync-spinner" aria-hidden="true" />
-      Checking for changes
+      {t("Checking for changes")}
     </span>
   );
 }
@@ -101,10 +103,11 @@ export function SyncStatus() {
 // called on every render of its own row; it returns the note to show, or false.
 const CONFLICTS: Partial<Record<ExperimentId, () => string | false>> = {
   canvasImmersive: () => {
+    const { t } = useSettingsTranslation();
     const style = useStore($backgroundStyle);
     return (
       style !== "dynamic" &&
-      `Not showing: Background is set to ${BACKGROUND_STYLE_LABELS[style] ?? style}. Switch it to Dynamic (Kawarp) to use this.`
+      t("Not showing: Background is set to {background}. Switch it to Dynamic (Kawarp) to use this.", { background: t(BACKGROUND_STYLE_LABELS[style] ?? style) })
     );
   },
 };
@@ -118,6 +121,7 @@ export function ExperimentRow({
   experiment: ResolvedExperiment;
   label: React.ReactNode;
 }) {
+  const { t } = useSettingsTranslation();
   const enabled = useStore($experiment(experiment.id));
   const syncing = useExperimentsSyncing();
   const forced = experiment.forceState;
@@ -141,7 +145,7 @@ export function ExperimentRow({
       <span
         ref={badgeRef}
         className="sl-sp-forced-badge"
-        title="Set by Spicy Lyrics, so it can't be changed here."
+        title={t("Set by Spicy Lyrics, so it can't be changed here.")}
       >
         <svg width="9" height="10" viewBox="0 0 9 10" fill="none" aria-hidden="true">
           <rect x="0.75" y="4.25" width="7.5" height="5" rx="1.25" fill="currentColor" />
@@ -151,7 +155,7 @@ export function ExperimentRow({
             strokeWidth="1.3"
           />
         </svg>
-        {forced ? "Forced on" : "Forced off"}
+        {t(forced ? "Forced on" : "Forced off")}
       </span>
     );
 

@@ -3,6 +3,9 @@ import ReactDOM from "react-dom/client";
 import { flushSync } from "react-dom";
 import { PopupModal } from "../components/Modal.ts";
 import SettingsPanel from "../components/ReactComponents/SettingsPanel/index.tsx";
+import { getSettingsLocale } from "../components/ReactComponents/SettingsPanel/locale.ts";
+import { translateSettings } from "./settingsLocale.ts";
+import { $settingsLanguage } from "./stores.ts";
 
 const MODAL_ID = "settingsPanel";
 
@@ -16,7 +19,7 @@ export function openSettingsPanel() {
   // The panel draws its own title and close button (see .slmodal-settingsPanel
   // in settings-panel.css); the title here only names the dialog.
   PopupModal.display({
-    title: "Settings",
+    title: translateSettings("Settings", getSettingsLocale()),
     content: container,
     isLarge: true,
     modalId: MODAL_ID,
@@ -25,7 +28,7 @@ export function openSettingsPanel() {
 }
 
 export function registerSettingsMenu(icon: string) {
-  const name = "Spicy Lyrics Settings";
+  let name = translateSettings("Spicy Lyrics Settings", getSettingsLocale());
   const itemId = "SpicyLyricsSettingsMenuItem";
   const profileSelector = '[data-testid="user-widget-link"]';
   const menuSelector = '#context-menu ul[role="menu"]';
@@ -35,10 +38,12 @@ export function registerSettingsMenu(icon: string) {
   // takes the whole menu down. There the entry is only injected into the DOM below;
   // Menu.Item is kept as the fallback if that injection fails.
   let menuItemRegistered = false;
+  let menuItem: Spicetify.Menu.Item | undefined;
   const registerMenuItem = () => {
     if (menuItemRegistered) return;
     menuItemRegistered = true;
-    new Spicetify.Menu.Item(name, false, openSettingsPanel, icon).register();
+    menuItem = new Spicetify.Menu.Item(name, false, openSettingsPanel, icon);
+    menuItem.register();
   };
   const [major = 0, minor = 0, patch = 0] = Spicetify.Platform.version
     .split(".")
@@ -120,5 +125,11 @@ export function registerSettingsMenu(icon: string) {
       );
     })) syncMenu();
   }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["aria-expanded"] });
+  $settingsLanguage.listen(() => {
+    name = translateSettings("Spicy Lyrics Settings", getSettingsLocale());
+    menuItem?.setName(name);
+    document.getElementById(itemId)?.remove();
+    syncMenu();
+  });
   syncMenu();
 }

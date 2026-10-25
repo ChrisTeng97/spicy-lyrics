@@ -1,3 +1,4 @@
+import { useSettingsTranslation } from "./locale.ts";
 import { useStore } from "@nanostores/react";
 import {
   RemoveCurrentLyrics_AllCaches,
@@ -8,6 +9,10 @@ import { $developerMode } from "../../../utils/stores.ts";
 import { Toggle } from "./components.tsx";
 import { AdvancedIcon } from "./icons.tsx";
 import type { GroupDef, SectionDef } from "./model.ts";
+
+function ControlText({ text }: { text: string }) {
+  return <>{useSettingsTranslation().t(text)}</>;
+}
 
 // Built once: the Control components must keep their identity across renders.
 const groups: GroupDef[] = [
@@ -25,7 +30,7 @@ const groups: GroupDef[] = [
             className="sl-sp-btn"
             onClick={() => RemoveCurrentLyrics_AllCaches(true)}
           >
-            Clear
+            <ControlText text="Clear" />
           </button>
         ),
       },
@@ -36,7 +41,7 @@ const groups: GroupDef[] = [
         keywords: "clear lyrics cache",
         Control: () => (
           <button type="button" className="sl-sp-btn" onClick={() => RemoveLyricsCache(true)}>
-            Clear
+            <ControlText text="Clear" />
           </button>
         ),
       },
@@ -51,7 +56,7 @@ const groups: GroupDef[] = [
             className="sl-sp-btn"
             onClick={() => RemoveCurrentLyrics_StateCache(true)}
           >
-            Reset
+            <ControlText text="Reset" />
           </button>
         ),
       },

@@ -1,0 +1,41 @@
+# Settings language and lyric preferences
+
+Run `bun test tests/settings-search.test.ts` for locale resolution, English fallback,
+interpolation, bilingual search, mixed queries, full-width input and label ranking.
+
+Open `tests/lyrics-preferences.html` in a current Chromium browser. It loads the
+real lyric stylesheet and reports PASS or FAIL. It covers the standard, simple,
+and refreshed simple renderers in both text directions, interlude isolation,
+independent toggles, and restoration of computed styles when the flags are off.
+It also checks Disable Lyrics Glow on active text and restoration when disabled,
+without changing inactive-line distance blur.
+
+For integration testing, build with `bun run build --no-copy` and load the generated
+extension into a compatible Spotify/Spicetify installation. Avoid simultaneously
+loading another copy of Spicy Lyrics.
+
+1. Open the dedicated Language sidebar tab and choose English, Simplified Chinese,
+   then Follow Spotify.
+   Verify translated labels, descriptions, option labels, accessibility labels and
+   empty search results; underlying option values should not change.
+2. Search for `逐行`, `整行`, `不模糊`, `同步`, `word by word`, and `逐行 bounce`
+   in both languages. A query such as `无此设置123` should return no results.
+   Also try `line by line`, `line-by-line`, `no blur`, `bloom`, `halo` and `language`.
+   The language selector should appear once in search and stay focused after switching.
+3. Under Experiments enable Line-only Lyrics and Clear Lyrics. Play word-synced
+   lyrics and confirm each active line highlights together, upcoming lyrics remain
+   sharp, and automatic scrolling and overlapping voices retain their timing.
+4. Toggle each preference independently. Turning both off should restore the
+   original word effects and distance blur. Repeat with Simple Lyrics Mode and
+   Refreshed Simple Lyrics Mode. Reload and confirm language and preferences persist.
+5. Search for `泛光`, `发光`, `光晕` or `glow`. Toggle Disable Lyrics Glow with
+   the other two preferences both off and on. Active text should have no glow;
+   turning the toggle off restores the original glow, without changing brightness,
+   inactive-line blur or background effects.
+   Hover an active, upcoming and finished line: the highlight box must remain,
+   but its backdrop blur must be absent while Disable Lyrics Glow is enabled.
+   With the option off, the original 2px hover backdrop blur must return. Check
+   actual rendered text as well as text-shadow; backdrop blur can also create a halo.
+
+These experiments default to off for existing installations. They affect lyric
+presentation; they do not replace lyric timing data or stop the underlying animator.

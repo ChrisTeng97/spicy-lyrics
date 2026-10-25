@@ -158,6 +158,30 @@ export const EXPERIMENTS = [
     default: true,
     pageClass: "Exp_KeepOverlappingLines",
   },
+  {
+    id: "lineOnlyLyrics",
+    label: "Line-only Lyrics",
+    description:
+      "Highlight each active line all at once, without word-by-word fill, bounce or letter effects. Keep automatic scrolling and duet alignment. Disable to restore word-synced effects.",
+    default: false,
+    pageClass: "Exp_LineOnlyLyrics",
+  },
+  {
+    id: "clearLyrics",
+    label: "Clear Lyrics",
+    description:
+      "Keep inactive lyrics sharp by removing distance-based blur. Active lines remain brighter. Disable to restore the original blur.",
+    default: false,
+    pageClass: "Exp_ClearLyrics",
+  },
+  {
+    id: "noLyricsGlow",
+    label: "Disable Lyrics Glow",
+    description:
+      "Remove text glow from highlighted lyrics and word effects. Keep active-line brightness, inactive-line blur and background effects. Disable to restore the original glow.",
+    default: false,
+    pageClass: "Exp_NoLyricsGlow",
+  },
 ] as const satisfies readonly Experiment[];
 
 /** A registry entry, narrowed to its literal `id`. */

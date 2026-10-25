@@ -1,5 +1,6 @@
 import { atom } from "nanostores";
 import { ProjectVersion } from "../../project/config.ts";
+import type { SettingsLanguage } from "./settingsLocale.ts";
 
 export const SETTINGS_KEY = "SL:settings";
 
@@ -72,6 +73,7 @@ export function persistAtom<T>(key: string, defaultValue: T) {
 }
 
 // Setting atoms (persisted)
+export const $settingsLanguage = persistAtom<SettingsLanguage>("settingsLanguage", "auto");
 // "none" paints nothing, so a theme's own background (an image, say) shows through.
 export type BackgroundStyle = "dynamic" | "artist" | "cover" | "color" | "none";
 export const BACKGROUND_STYLES: readonly BackgroundStyle[] = ["dynamic", "artist", "cover", "color", "none"];
